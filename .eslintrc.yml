@@ -1,0 +1,14 @@
+extends: 
+  - google
+  - "./eslint/customRules.js"
+
+parserOptions:
+  ecmaVersion: 6
+  sourceType: "script"
+  ecmaFeatures: {}
+
+env:
+  node: true
+
+rules:
+  linebreak-style: 0
