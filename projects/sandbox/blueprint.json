@@ -2,7 +2,7 @@
     "name": "Sandbox Example",
     "javascript": {
         "src": "test.js",
-        "dest": "Bundles/Sandbox/bundle.js",
+        "dest": "Bundles/Sandbox/sandbox.js",
         "minify": true,
         "enabled": true,
         "debug": false

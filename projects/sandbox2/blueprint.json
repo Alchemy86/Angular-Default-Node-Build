@@ -1,0 +1,10 @@
+{
+    "name": "Sandbox Example 2",
+    "javascript": {
+        "src": "index.js",
+        "dest": "Bundles/Sandbox 2/sandbox.js",
+        "minify": true,
+        "enabled": true,
+        "debug": false
+    }
+}

@@ -1,78 +1,70 @@
 'use strict';
 
-const browserify = require('browserify');
-const path = require('path');
-const gulp = require('gulp');
-const glob = require('glob');
-const fs = require('fs');
-
-function ensureDirectoryExistence(filePath) {
-  const dirname = path.dirname(filePath);
-  if (fs.existsSync(dirname)) {
-    return true;
-  }
-  ensureDirectoryExistence(dirname);
-  fs.mkdirSync(dirname);
-}
-
-function printBlueprint(blueprintPath) {
-    const filePath = path.parse(blueprintPath);
-    const taskName = filePath.dir.replace(filePath.root, '');
-    let blueprint;
-    let browserifyObj;
-
-    gulp.task(taskName, (done) => {
-        try {
-        blueprint = JSON.parse(fs.readFileSync(blueprintPath, 'utf8'));
-    } catch (e) {
-        console.log(blueprintPath);
-        console.log('Failure reading blueprint file: ' + blueprintPath);
-        return done(e);
-    }
-
-    console.log('Made it');
-
-    if (!blueprint.javascript.enabled) {
-        console.log('Skipped: ${blueprint.name}');
-        return done();
-    }
-
-    browserifyObj = browserify({
-        entries: [path.join(filePath.dir, blueprint.javascript.src)],
-        debug: blueprint.javascript.debug
-    });
-
-        console.log('here now');
-
-    if (blueprint.javascript.minify) {
-        browserifyObj = browserifyObj.transform('uglifyify');
-    }
-
-    if (blueprint.javascript.dest.endsWith('.js')) {
-        blueprint.javascript.dest =
-            blueprint.javascript.dest
-                .substring(0, blueprint.javascript.dest -3);
-    }
-    const writer =
-        fs.createWriteStream(blueprint.javascript.dest + '.bundle.js');
-
-    ensureDirectoryExistence(writer.path);
-
-    browserifyObj.bundle()
-        .on('error', function(e) {
-            console.log(e);
-        })
-        .pipe(writer);
-    });
-
-return taskName;
-};
-
-const tasks = glob.sync('./projects/**/blueprint.json')
-    .map((path) => printBlueprint(path));
+const browserify = require('browserify'),
+    path = require('path'),
+    gulp = require('gulp'),
+    glob = require('glob'),
+    fs = require('fs'),
+    chalk = require('chalk'),
+    source = require('vinyl-source-stream'),
+    tasks = glob.sync('./projects/**/blueprint.json')
+        .map((moo) => printBlueprint(moo));
 
 if (tasks.length === 0) {
     console.log('No blueprints defined');
 }
 
 gulp.task('gen:js', tasks);
+
+function printBlueprint(blueprintPath) {
+    const filePath = path.parse(blueprintPath),
+        taskName = filePath.dir.replace(filePath.root, '');
+    let blueprint,
+        browserifyObj,
+        destinationPath;
+
+    gulp.task(taskName, (done) => {
+        try {
+            blueprint = JSON.parse(fs.readFileSync(blueprintPath, 'utf8'));
+        } catch (e) {
+            console.log(blueprintPath);
+            console.log('Failure reading blueprint file: ' + blueprintPath);
+            return done(e);
+        }
+
+        if (!blueprint.javascript.enabled) {
+            console.log('Skipped: ${blueprint.name}');
+            return done();
+        }
+
+        destinationPath = gulp.dest(path.parse(blueprint.javascript.dest).dir);
+
+        browserifyObj = browserify({
+            entries: [path.join(filePath.dir, blueprint.javascript.src)],
+            debug: blueprint.javascript.debug
+        });
+
+        if (blueprint.javascript.minify) {
+            browserifyObj = browserifyObj.transform('uglifyify');
+        }
+
+        if (blueprint.javascript.dest.endsWith('.js')) {
+            blueprint.javascript.dest =
+                blueprint.javascript.dest
+                    .substring(0, blueprint.javascript.dest.length - 3);
+        }
+
+        browserifyObj.bundle()
+            .on('error', (e) => {
+                console.log(`${chalk.red('Project Bundling Failed: ')} ${chalk.cyan(blueprint.name)}`);
+                this.emit('end');
+            })
+            .on('end', () => {
+                console.log(`${chalk.green('Project Bundling Complete: ')} ${chalk.cyan(blueprint.name)}`);
+            })
+            .pipe(source(path.basename(`${blueprint.javascript.dest}.bundle.js`)))
+            .pipe(destinationPath);
+    });
+
+    return taskName;
+}
