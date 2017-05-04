@@ -27,13 +27,12 @@ function printBlueprint(blueprintPath) {
         try {
             blueprint = JSON.parse(fs.readFileSync(blueprintPath, 'utf8'));
         } catch (e) {
-            console.log(blueprintPath);
-            console.log('Failure reading blueprint file: ' + blueprintPath);
+            console.log(`${chalk.red('Failure reading blueprint file: ')} ${chalk.cyan(blueprintPath)}`);
             return done(e);
         }
 
         if (!blueprint.javascript.enabled) {
-            console.log('Skipped: ${blueprint.name}');
+            console.log(`${chalk.yellow('Project Skipped: ')} ${chalk.cyan(blueprint.name)}`);
             return done();
         }
 

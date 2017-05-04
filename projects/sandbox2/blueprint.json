@@ -4,7 +4,7 @@
         "src": "index.js",
         "dest": "Bundles/Sandbox 2/sandbox.js",
         "minify": true,
-        "enabled": true,
+        "enabled": false,
         "debug": false
     }
 }
