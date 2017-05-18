@@ -23,6 +23,7 @@ function printBlueprint(blueprintPath) {
         browserifyObj,
         destinationPath;
 
+        // Create the task
     gulp.task(taskName, (done) => {
         try {
             blueprint = JSON.parse(fs.readFileSync(blueprintPath, 'utf8'));
@@ -55,14 +56,18 @@ function printBlueprint(blueprintPath) {
 
         browserifyObj.bundle()
             .on('error', (e) => {
-                console.log(`${chalk.red('Project Bundling Failed: ')} ${chalk.cyan(blueprint.name)}`);
-                this.emit('end');
+                console.log(`${chalk.red('Project Bundling Failed: ')} 
+                    ${chalk.cyan(blueprint.name)}`);
             })
             .on('end', () => {
-                console.log(`${chalk.green('Project Bundling Complete: ')} ${chalk.cyan(blueprint.name)}`);
+                console.log(`${chalk.green('Project Bundling Complete: ')} 
+                    ${chalk.cyan(blueprint.name)}`);
             })
-            .pipe(source(path.basename(`${blueprint.javascript.dest}.bundle.js`)))
+            .pipe(source(path.basename(
+                `${blueprint.javascript.dest}.bundle.js`)))
             .pipe(destinationPath);
+
+        return true;
     });
 
     return taskName;

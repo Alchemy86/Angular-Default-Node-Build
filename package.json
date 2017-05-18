@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "lint": "eslint projects/ -f ./eslint/format.js",
-    "build": "gulp build"
+    "build": "gulp build",
+    "prebuild": "npm run lint"
   },
   "author": "Aaron Gibson",
   "license": "ISC",

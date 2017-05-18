@@ -14,7 +14,8 @@ module.exports = {
                 'ArrowFunctionExpression': false
             }
         }],
-        'one-var': ['error', 'never'],
-        'consistent-return': 2
+        'one-var': [2, 'always'],
+        'consistent-return': 2,
+        'max-len': ['error', 120]
     }
 };
