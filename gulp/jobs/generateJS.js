@@ -7,11 +7,12 @@ const browserify = require('browserify'),
     fs = require('fs'),
     chalk = require('chalk'),
     source = require('vinyl-source-stream'),
+    validator = require('../validator').validateJs,
     tasks = glob.sync('./projects/**/blueprint.json')
         .map((moo) => printBlueprint(moo));
 
 if (tasks.length === 0) {
-    console.log('No blueprints defined');
+    console.log(chalk.yellow('No blueprints defined'));
 }
 
 gulp.task('gen:js', tasks);
@@ -23,13 +24,20 @@ function printBlueprint(blueprintPath) {
         browserifyObj,
         destinationPath;
 
-        // Create the task
+    // Create the task
     gulp.task(taskName, (done) => {
         try {
             blueprint = JSON.parse(fs.readFileSync(blueprintPath, 'utf8'));
         } catch (e) {
             console.log(`${chalk.red('Failure reading blueprint file: ')} ${chalk.cyan(blueprintPath)}`);
             return done(e);
+        }
+
+        const validation = validator(blueprint);
+
+        if (!validation.valid) {
+            console.log(`${chalk.red('Blueprint file is invalid: ')} ${chalk.cyan(validation.errors.join(', '))}`);
+            return done();
         }
 
         if (!blueprint.javascript.enabled) {
